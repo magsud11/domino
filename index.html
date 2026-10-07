@@ -10,21 +10,21 @@
 html,body{height:100%;margin:0}
 body{background:var(--wood);color:var(--txt);font-family:Georgia,"Times New Roman",serif;display:flex;flex-direction:column;height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 header{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#2a1d14}
-header h1{font-size:19px;margin:0;flex:1;letter-spacing:.5px}
-button,select,input{font:inherit;background:var(--brass);color:#2a1d14;border:0;border-radius:8px;padding:8px 10px;font-weight:bold}
+header h1{font-size:19px;margin:0;flex:1}
+button,select,input{font:inherit;background:var(--brass);color:#2a1d14;border:0;border-radius:8px;padding:8px 12px;font-weight:bold}
 button:disabled{opacity:.35}
-select{padding:7px 4px}
-#flag{padding:4px 8px;font-size:18px;background:#f3ecda}
+input[type=range]{flex:1;padding:0;background:none}
+#flag{background:#f3ecda}
 main{flex:1;display:flex;flex-direction:column;background:radial-gradient(ellipse at center,var(--felt),var(--felt2));min-height:0}
-.bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font-size:15px}
+.bar{display:flex;justify-content:space-between;padding:8px 12px;font-size:15px}
 .bar b{color:var(--brass)}
 #tbar{height:5px;background:#0006}
 #tfill{display:block;height:100%;width:0;background:var(--brass);transition:width .25s linear}
 #tfill.warn{background:#d9534f}
 #oppRow{display:flex;align-items:center;gap:8px;padding:4px 10px}
-#opp{display:flex;flex-direction:column;align-items:center;width:48px;flex:none}
+#opp{display:flex;flex-direction:column;align-items:center;width:48px}
 #oppAv{width:36px;height:36px;border-radius:50%;background:#0e2a20;border:2px solid var(--brass);display:grid;place-items:center;font-size:18px}
-#oppSt{font-size:12px;line-height:1;min-height:14px;margin-top:2px}
+#oppSt{font-size:12px;min-height:14px}
 #oppSt.off{animation:bl 1s infinite}
 @keyframes bl{50%{opacity:.3}}
 #botTiles{flex:1;display:flex;gap:3px;justify-content:center;flex-wrap:wrap;min-height:34px}
@@ -44,23 +44,36 @@ main{flex:1;display:flex;flex-direction:column;background:radial-gradient(ellips
 .tile.big.ok{outline:3px solid var(--brass);transform:translateY(-6px)}
 .tile.big:not(.ok){opacity:.55}
 .tile.sm{--s:24px}
-#ov,#menu{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
-#ov>div,#menu>div{background:var(--wood);border:2px solid var(--brass);border-radius:14px;padding:22px;text-align:center;width:100%;max-width:320px}
-#ov h2,#menu h2{margin:0 0 10px}
-#ov p{margin:6px 0 14px;line-height:1.4;white-space:pre-line}
-#menu button,#menu input{display:block;width:100%;margin:8px 0}
-#menu input{text-align:center;letter-spacing:4px;font-size:20px;background:var(--ivory);text-transform:uppercase}
-#mSt{min-height:24px;line-height:1.4;margin:6px 0 0;word-break:break-word}
-#mSt b{font-size:28px;letter-spacing:5px;color:var(--brass)}
+#ov{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px;z-index:5}
+#ov>div{background:var(--wood);border:2px solid var(--brass);border-radius:14px;padding:22px;text-align:center;width:100%;max-width:320px}
+#ov p{white-space:pre-line;line-height:1.4}
+#ov button{display:block;width:100%;margin:8px 0}
+.scr{position:fixed;inset:0;background:var(--wood);display:none;flex-direction:column;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 16px 16px;overflow:auto;z-index:10}
+.scr h2{margin:0;flex:1}
+.top,.row{display:flex;align-items:center;gap:8px}
+.row span{min-width:70px}
+.tabs{display:flex;gap:8px}
+.tabs button{flex:1;opacity:.5}
+.tabs button.on{opacity:1}
+#list{flex:1;display:flex;flex-direction:column;gap:6px;overflow:auto}
+.rm{text-align:left;background:#5a4330;color:var(--txt);font-weight:normal}
+.scr>button{width:100%}
+#rdy{z-index:6;align-items:center;justify-content:center;text-align:center}
+.bigb{width:150px;height:150px;border-radius:50%;font-size:46px;line-height:1.1;width:150px!important}
+.bigb span{font-size:30px}
+#chat{position:fixed;left:0;right:0;bottom:0;max-height:55%;background:#2a1d14;border-top:2px solid var(--brass);display:none;flex-direction:column;z-index:7;padding:8px}
+#cl{overflow:auto;flex:1;min-height:80px;font-size:15px;line-height:1.5}
+#cl b{color:var(--brass)}
+#cr{display:flex;gap:6px;margin-top:6px}
+#cm{flex:1;background:var(--ivory)}
 </style>
 </head>
 <body>
 <header>
 <button id="flag">🏳️</button>
 <h1>Domino 101</h1>
-<select id="lvl"></select>
-<button id="lang">AZ</button>
-<button id="nw"></button>
+<button id="chatB">💬</button>
+<button id="menuB">☰</button>
 </header>
 <main>
 <div class="bar"><span><span id="lbBot"></span>: <b id="sBot">0</b></span><span><span id="yard"></span> <span id="tm"></span></span><span><span id="lbYou"></span>: <b id="sYou">0</b></span></div>
@@ -71,16 +84,38 @@ main{flex:1;display:flex;flex-direction:column;background:radial-gradient(ellips
 <div id="ctl"><button id="draw"></button><button id="pass"></button><button id="L"></button><button id="R"></button></div>
 <div id="hand"></div>
 </main>
-<div id="ov"><div><h2 id="ovT"></h2><p id="ovP"></p><button id="ovB"></button></div></div>
-<div id="menu"><div>
-<h2 id="mT">Domino 101</h2>
-<button id="mBot"></button>
-<button id="mNew"></button>
-<input id="mCode" maxlength="6" autocomplete="off">
-<button id="mJoin"></button>
-<p id="mSt"></p>
-<button id="mClose"></button>
-</div></div>
+
+<div id="chat"><div id="cl"></div><div id="cr"><input id="cm" maxlength="100" autocomplete="off"><button id="cs"></button></div></div>
+
+<div id="ov"><div><h2 id="ovT"></h2><p id="ovP"></p><button id="ovB"></button><button id="ovL"></button></div></div>
+
+<div id="rdy" class="scr"><h2 id="rT" style="flex:none"></h2><p id="rP"></p><button id="rB" class="bigb">⚔️<br><span id="rC"></span></button><button id="rL"></button></div>
+
+<div id="lobby" class="scr">
+<div class="top"><h2 id="lT"></h2><button id="lSet">⚙</button></div>
+<div class="tabs"><button id="tG"></button><button id="tP"></button></div>
+<div id="list"></div>
+<p id="lSt"></p>
+<button id="lNew"></button>
+<button id="lBot"></button>
+</div>
+
+<div id="menuScr" class="scr">
+<h2 id="mT"></h2>
+<button id="mRes"></button>
+<button id="mSet"></button>
+<button id="mSur"></button>
+<button id="mLob"></button>
+</div>
+
+<div id="setScr" class="scr">
+<h2 id="sT"></h2>
+<div class="row"><span id="sL"></span><button data-l="az">AZ</button><button data-l="en">EN</button><button data-l="ru">RU</button></div>
+<div class="row"><span id="sLv"></span><select id="lvl"></select></div>
+<div class="row"><button id="snB">🔊</button><span id="sS"></span><input type="range" id="snR" min="0" max="100"></div>
+<div class="row"><button id="muB">🎵</button><span id="sM"></span><input type="range" id="muR" min="0" max="100"></div>
+<button id="sBack"></button>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -97,31 +132,72 @@ const CFG={
 };
 
 const TXT={
-az:{bot:"Bot",opp:"Rəqib",you:"Sən",yard:"Anbar",draw:"Daş çək",pass:"Pas",nw:"Menyu",left:"◀ Sol",right:"Sağ ▶",
-easy:"Asan",normal:"Orta",hard:"Çətin",yourTurn:"Sənin növbən",botTurn:"Botun növbəsi...",oppTurn:"Rəqibin növbəsi...",noMove:"Uyğun daş yoxdur: anbardan çək",
-mustPass:"Anbar boşdur: pas de",botDraw:"Bot anbardan daş çəkdi",botPass:"Bot pas dedi",choose:"Hansı tərəfə?",
-start:"Başlayır:",rW:"Raund sənindir!",rL:"Raund rəqibindir",rD:"Raund bərabərdir",blocked:"Oyun bloklandı.",pts:"xal",
-next:"Növbəti raund",mW:"Sən qazandın! 🏆",mL:"Rəqib qazandı",again:"Yenidən oyna",
-vsBot:"Botla oyna",create:"Otaq yarat",join:"Otağa qoşul",codePh:"KOD",close:"Bağla",
-waitGuest:"Dostuna bu kodu göndər:",waitHost:"Otaq sahibinin davam etməsi gözlənilir...",notFound:"Otaq tapılmadı",full:"Otaq doludur",err:"Xəta:",wait:"Gözlə...",fill:"6 simvollu kodu yaz",
-surQ:"Təslim olmaq istəyirsən? Oyunu uduzacaqsan.",surMe:"Təslim oldun",surOpp:"Rəqib təslim oldu 🏆",timeUp:"Vaxt bitdi: pas",oppOff:"Rəqibin bağlantısı kəsildi",flag:"Təslim ol"},
-en:{bot:"Bot",opp:"Opponent",you:"You",yard:"Stock",draw:"Draw",pass:"Pass",nw:"Menu",left:"◀ Left",right:"Right ▶",
-easy:"Easy",normal:"Normal",hard:"Hard",yourTurn:"Your turn",botTurn:"Bot is thinking...",oppTurn:"Opponent's turn...",noMove:"No playable tile: draw from stock",
-mustPass:"Stock is empty: pass",botDraw:"Bot drew a tile",botPass:"Bot passed",choose:"Which side?",
-start:"Starts:",rW:"You won the round!",rL:"Opponent won the round",rD:"Round is a tie",blocked:"Game blocked.",pts:"pts",
-next:"Next round",mW:"You won the match! 🏆",mL:"Opponent won the match",again:"Play again",
-vsBot:"Play vs bot",create:"Create room",join:"Join room",codePh:"CODE",close:"Close",
-waitGuest:"Send this code to your friend:",waitHost:"Waiting for the host to continue...",notFound:"Room not found",full:"Room is full",err:"Error:",wait:"Please wait...",fill:"Enter the 6-character code",
-surQ:"Surrender? You will lose the match.",surMe:"You surrendered",surOpp:"Opponent surrendered 🏆",timeUp:"Time is up: pass",oppOff:"Opponent disconnected",flag:"Surrender"}};
+az:{lobby:"Lobi",glob:"Qlobal",priv:"Private",create:"Otaq yarat",bot:"Botla oyna",none:"Otaq yoxdur",pinAsk:"4 rəqəmli PIN:",pinBad:"PIN 4 rəqəm olmalıdır",pinWrong:"PIN səhvdir",full:"Otaq doludur",nf:"Otaq tapılmadı",
+you:"Sən",opp:"Rəqib",botN:"Bot",yard:"Anbar",draw:"Daş çək",pass:"Pas",left:"◀ Sol",right:"Sağ ▶",easy:"Asan",normal:"Orta",hard:"Çətin",level:"Bot",lang:"Dil",snd:"Səs",mus:"Musiqi",sett:"Ayarlar",menu:"Menyu",resume:"Davam et",sur:"Təslim ol",toLobby:"Lobiyə çıx",back:"Geri",
+readyQ:"Hazırsan? Bas!",waitOpp:"Rəqib gözlənilir...",readyWait:"Rəqibin hazır olması gözlənilir...",kicked:"Hazır olmadığın üçün otaqdan çıxarıldın",closed:"Otaq bağlandı",
+yt:"Sənin növbən",ot:"Rəqibin növbəsi...",bt:"Botun növbəsi...",noMove:"Uyğun daş yoxdur: anbardan çək",mustPass:"Anbar boşdur: pas de",bd:"Bot anbardan daş çəkdi",bp:"Bot pas dedi",choose:"Hansı tərəfə?",start:"Başlayır:",
+rW:"Raund sənindir!",rL:"Raund rəqibindir",rD:"Raund bərabərdir",blocked:"Oyun bloklandı.",pts:"xal",next:"Növbəti raund",mW:"Sən qazandın! 🏆",mL:"Rəqib qazandı",again:"Yenidən oyna",
+surQ:"Təslim olmaq istəyirsən? Oyunu uduzacaqsan.",surMe:"Təslim oldun",surOpp:"Rəqib təslim oldu 🏆",timeUp:"Vaxt bitdi: pas",oppOff:"Rəqibin bağlantısı kəsildi",chatPh:"Mesaj...",send:"Göndər",err:"Xəta:",wait:"Gözlə...",pin:"PIN"},
+en:{lobby:"Lobby",glob:"Global",priv:"Private",create:"Create room",bot:"Play vs bot",none:"No rooms",pinAsk:"4-digit PIN:",pinBad:"PIN must be 4 digits",pinWrong:"Wrong PIN",full:"Room is full",nf:"Room not found",
+you:"You",opp:"Opponent",botN:"Bot",yard:"Stock",draw:"Draw",pass:"Pass",left:"◀ Left",right:"Right ▶",easy:"Easy",normal:"Normal",hard:"Hard",level:"Bot",lang:"Language",snd:"Sound",mus:"Music",sett:"Settings",menu:"Menu",resume:"Resume",sur:"Surrender",toLobby:"Leave to lobby",back:"Back",
+readyQ:"Ready? Tap!",waitOpp:"Waiting for opponent...",readyWait:"Waiting for opponent to be ready...",kicked:"You were removed for not being ready",closed:"Room closed",
+yt:"Your turn",ot:"Opponent's turn...",bt:"Bot is thinking...",noMove:"No playable tile: draw from stock",mustPass:"Stock is empty: pass",bd:"Bot drew a tile",bp:"Bot passed",choose:"Which side?",start:"Starts:",
+rW:"You won the round!",rL:"Opponent won the round",rD:"Round is a tie",blocked:"Game blocked.",pts:"pts",next:"Next round",mW:"You won the match! 🏆",mL:"Opponent won the match",again:"Play again",
+surQ:"Surrender? You will lose the match.",surMe:"You surrendered",surOpp:"Opponent surrendered 🏆",timeUp:"Time is up: pass",oppOff:"Opponent disconnected",chatPh:"Message...",send:"Send",err:"Error:",wait:"Please wait...",pin:"PIN"},
+ru:{lobby:"Лобби",glob:"Глобальные",priv:"Приватные",create:"Создать комнату",bot:"Играть с ботом",none:"Комнат нет",pinAsk:"PIN (4 цифры):",pinBad:"PIN должен быть из 4 цифр",pinWrong:"Неверный PIN",full:"Комната заполнена",nf:"Комната не найдена",
+you:"Вы",opp:"Соперник",botN:"Бот",yard:"Базар",draw:"Взять",pass:"Пас",left:"◀ Лево",right:"Право ▶",easy:"Легко",normal:"Средне",hard:"Сложно",level:"Бот",lang:"Язык",snd:"Звук",mus:"Музыка",sett:"Настройки",menu:"Меню",resume:"Продолжить",sur:"Сдаться",toLobby:"В лобби",back:"Назад",
+readyQ:"Готов? Нажми!",waitOpp:"Ожидание соперника...",readyWait:"Ожидание готовности соперника...",kicked:"Вы удалены из комнаты: не нажали «готов»",closed:"Комната закрыта",
+yt:"Ваш ход",ot:"Ход соперника...",bt:"Бот думает...",noMove:"Нет хода: берите с базара",mustPass:"Базар пуст: пас",bd:"Бот взял кость",bp:"Бот пасует",choose:"С какой стороны?",start:"Начинает:",
+rW:"Раунд ваш!",rL:"Раунд соперника",rD:"Раунд вничью",blocked:"Рыба.",pts:"очк.",next:"Следующий раунд",mW:"Вы выиграли матч! 🏆",mL:"Соперник выиграл матч",again:"Играть снова",
+surQ:"Сдаться? Вы проиграете матч.",surMe:"Вы сдались",surOpp:"Соперник сдался 🏆",timeUp:"Время вышло: пас",oppOff:"Соперник отключился",chatPh:"Сообщение...",send:"Отправить",err:"Ошибка:",wait:"Подождите...",pin:"PIN"}};
 let lang=localStorage.getItem("dlang")||"az",level=localStorage.getItem("dlvl")||"normal";
 const t=k=>TXT[lang][k];
 const $=id=>document.getElementById(id);
 const TARGET=101,TURN_MS=11000,GRACE=3000;
-let G=null,online=null,fbInit=false,shownRound=null,off=0,fired=0;
+const CC=((navigator.language||"").split("-")[1]||"UN").toUpperCase();
+let G=null,online=null,fbInit=false,shownRound=null,off=0,fired=0,tab="g",lobbyData={},lobbyOn=false,setFrom="lobby";
 const now=()=>Date.now()+off;
-const bn=()=>online?t("opp"):t("bot");
+const bn=()=>online?t("opp"):t("botN");
 const nm=w=>w==="p"?t("you"):bn();
 
+// ================= SƏS =================
+let AC,MG,mt=null;
+const S={snd:parseFloat(localStorage.dsnd??"0.7"),mus:parseFloat(localStorage.dmus??"0.3"),ps:.7,pm:.3};
+function ac(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();MG=AC.createGain();MG.connect(AC.destination);MG.gain.value=S.mus*.25}if(AC.state==="suspended")AC.resume();return AC}
+function click(){
+ if(S.snd<=0)return;
+ try{const c=ac(),n=c.sampleRate*.06|0,b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);
+ for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+ const s=c.createBufferSource();s.buffer=b;
+ const f=c.createBiquadFilter();f.type="bandpass";f.frequency.value=1600;
+ const g=c.createGain();g.gain.value=S.snd;
+ s.connect(f);f.connect(g);g.connect(c.destination);s.start()}catch(e){}
+}
+const NT=[220,261.6,293.7,329.6,392,440,523.3];
+function note(){
+ if(S.mus<=0||!AC)return;
+ const o=AC.createOscillator(),g=AC.createGain(),t0=AC.currentTime;
+ o.type="sine";o.frequency.value=NT[Math.random()*NT.length|0]/(Math.random()<.3?2:1);
+ g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.5,t0+1);g.gain.exponentialRampToValueAtTime(.001,t0+4.5);
+ o.connect(g);g.connect(MG);o.start(t0);o.stop(t0+5);
+}
+function music(){
+ if(S.mus>0&&!mt){ac();note();mt=setInterval(note,2600)}
+ if(S.mus<=0&&mt){clearInterval(mt);mt=null}
+ if(MG)MG.gain.value=S.mus*.25;
+}
+document.addEventListener("pointerdown",()=>{try{ac();music()}catch(e){}},{once:true});
+function setVol(k,v){S[k]=v;localStorage["d"+k]=v;if(k==="mus")music();syncSet()}
+function syncSet(){
+ $("snR").value=S.snd*100;$("muR").value=S.mus*100;
+ $("snB").textContent=S.snd>0?"🔊":"🔇";$("muB").textContent=S.mus>0?"🎵":"🔇";
+}
+$("snR").oninput=e=>setVol("snd",e.target.value/100);
+$("muR").oninput=e=>setVol("mus",e.target.value/100);
+$("snB").onclick=()=>{if(S.snd>0){S.ps=S.snd;setVol("snd",0)}else setVol("snd",S.ps||.7)};
+$("muB").onclick=()=>{if(S.mus>0){S.pm=S.mus;setVol("mus",0)}else setVol("mus",S.pm||.3)};
+
+// ================= OYUN MÜHƏRRİKİ =================
 const PIPS=[[],[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
 function half(n){const h=document.createElement("div");h.className="half";
  for(let i=0;i<9;i++){const c=document.createElement("div");if(PIPS[n].includes(i))c.className="pip";h.appendChild(c)}return h}
@@ -134,7 +210,6 @@ function sides(tl){const [l,r]=ends(),s=[];
  if(tl[0]===r||tl[1]===r)s.push("R");return s}
 const legal=h=>h.map((x,i)=>sides(x).length?i:-1).filter(i=>i>=0);
 
-// ---------- paylama ----------
 function deal(){
  const all=[];for(let i=0;i<7;i++)for(let j=i;j<7;j++)all.push([i,j]);
  shuffle(all);
@@ -145,8 +220,6 @@ function deal(){
  const h=first==="A"?A:B;h.splice(h.indexOf(best),1);
  return {A,B,yard:all,chain:[[best[0],best[1]]],first};
 }
-
-// ---------- bot rejimi ----------
 function newMatch(){G={scores:{p:0,b:0},over:false};newRound()}
 function newRound(){
  const d=deal();
@@ -156,13 +229,11 @@ function newRound(){
  render(t("start")+" "+nm(who));
  if(G.turn==="b")botMove();
 }
-
-// ---------- hərəkətlər ----------
 function place(h,i,side){
  const x=h.splice(i,1)[0];let a=x[0],b=x[1];
  if(side==="L"){const l=G.chain[0][0];if(b!==l)[a,b]=[b,a];G.chain.unshift([a,b])}
  else{const r=G.chain[G.chain.length-1][1];if(a!==r)[a,b]=[b,a];G.chain.push([a,b])}
- G.passes=0;
+ G.passes=0;click();
 }
 function afterMove(who){
  const h=who==="p"?G.hand:G.bot;
@@ -174,7 +245,7 @@ function afterMove(who){
 function doPass(who){
  G.passes++;
  if(G.passes>=2)return endRound(null,true);
- G.turn=who==="p"?"b":"p";G.tt=now();render(who==="b"?t("botPass"):"");
+ G.turn=who==="p"?"b":"p";G.tt=now();render(who==="b"?t("bp"):"");
  if(online)sync();else if(G.turn==="b")botMove();
 }
 function playerTile(i){
@@ -189,39 +260,12 @@ $("R").onclick=()=>{if(G.pending!=null){place(G.hand,G.pending,"R");afterMove("p
 $("draw").onclick=()=>{if(G.turn==="p"&&!G.over&&!legal(G.hand).length&&G.yard.length){G.hand.push(G.yard.pop());G.tt=now();render();if(online)sync()}};
 $("pass").onclick=()=>{if(G.turn==="p"&&!G.over&&!legal(G.hand).length&&!G.yard.length)doPass("p")};
 
-// ---------- taymer ----------
-function timeoutPass(){
- G.pending=null;G.turn="b";G.tt=now();
- render(t("timeUp"));
- if(online)sync();else botMove();
-}
-function enforce(seen){
- online.ref.child("s").transaction(c=>{
-  if(!c||c.over||c.tt!==seen)return;
-  c.turn=c.turn==="h"?"g":"h";c.tt=now();return c;
- });
-}
-function tick(){
- const f=$("tfill");
- if(!G||G.over||!G.tt||(!online&&G.turn==="b")){$("tm").textContent="";f.style.width="0";return}
- const left=TURN_MS-(now()-G.tt);
- const sec=Math.max(0,Math.ceil(left/1000));
- $("tm").textContent="⏱ "+sec;
- f.style.width=Math.max(0,Math.min(100,left/TURN_MS*100))+"%";
- f.className=(left<4000&&G.turn==="p")?"warn":"";
- if(left<=0&&fired!==G.tt){
-  if(G.turn==="p"){fired=G.tt;timeoutPass()}
-  else if(online&&left<-GRACE){fired=G.tt;enforce(G.tt)}
- }
-}
-setInterval(tick,250);
-
 function botMove(){
  setTimeout(()=>{
-  if(online||G.over||G.turn!=="b")return;
+  if(online||!G||G.over||G.turn!=="b")return;
   const mv=legal(G.bot);
   if(!mv.length){
-   if(G.yard.length){G.bot.push(G.yard.pop());render(t("botDraw"));return botMove()}
+   if(G.yard.length){G.bot.push(G.yard.pop());render(t("bd"));return botMove()}
    return doPass("b");
   }
   let pick;
@@ -244,15 +288,37 @@ function botMove(){
  },700);
 }
 
-// ---------- təslim ----------
-$("flag").onclick=()=>{
- if(!G||G.over)return;
- if(!confirm(t("surQ")))return;
- G.over=true;G.pending=null;
- G.res={w:"b",gain:0,bl:false,fin:true,sur:"p"};
- render();
- if(online)sync();else showResult();
-};
+// ---------- taymer ----------
+function timeoutPass(){
+ G.pending=null;G.turn="b";G.tt=now();
+ render(t("timeUp"));
+ if(online)sync();else botMove();
+}
+function enforce(seen){
+ online.ref.child("s").transaction(c=>{
+  if(!c||c.over||c.tt!==seen)return;
+  c.turn=c.turn==="h"?"g":"h";c.tt=now();return c;
+ });
+}
+function tick(){
+ // hazır geri sayımı
+ if(online&&online.room&&!online.room.s&&online.room.guest&&online.room.rd){
+  const l=online.room.rd-now();
+  $("rC").textContent=Math.max(0,Math.ceil(l/1000));
+  if(online.role==="h"&&l<-400&&online.kicked!==online.room.rd){online.kicked=online.room.rd;enforceReady()}
+ }
+ const f=$("tfill");
+ if(!G||G.over||!G.tt||(!online&&G.turn==="b")){$("tm").textContent="";f.style.width="0";return}
+ const left=TURN_MS-(now()-G.tt);
+ $("tm").textContent="⏱ "+Math.max(0,Math.ceil(left/1000));
+ f.style.width=Math.max(0,Math.min(100,left/TURN_MS*100))+"%";
+ f.className=(left<4000&&G.turn==="p")?"warn":"";
+ if(left<=0&&fired!==G.tt){
+  if(G.turn==="p"){fired=G.tt;timeoutPass()}
+  else if(online&&left<-GRACE){fired=G.tt;enforce(G.tt)}
+ }
+}
+setInterval(tick,250);
 
 // ---------- raund sonu ----------
 function endRound(winner,blocked){
@@ -271,16 +337,27 @@ function showResult(){
  if(r.sur)title=r.sur==="p"?t("surMe"):t("surOpp");
  else title=fin?(G.scores.p>=G.scores.b?t("mW"):t("mL")):(r.w==="p"?t("rW"):r.w==="b"?t("rL"):t("rD"));
  $("ovT").textContent=title;
- let p=(r.bl?t("blocked")+" ":"")+(!r.sur&&r.w&&r.gain?nm(r.w)+" +"+r.gain+" "+t("pts"):"")+"\n"+G.scores.p+" : "+G.scores.b;
+ $("ovP").textContent=(r.bl?t("blocked")+" ":"")+(!r.sur&&r.w&&r.gain?nm(r.w)+" +"+r.gain+" "+t("pts"):"")+"\n"+G.scores.p+" : "+G.scores.b;
  const b=$("ovB");
- if(online&&online.role!=="h"){b.style.display="none";p+="\n"+t("waitHost")}
+ if(r.sur||(online&&online.role!=="h"))b.style.display="none";
  else{b.style.display="";b.textContent=fin?t("again"):t("next");
   b.onclick=()=>{$("ov").style.display="none";if(online)startOnline(fin);else fin?newMatch():newRound()}}
- $("ovP").textContent=p;
+ $("ovL").textContent=t("toLobby");$("ovL").onclick=()=>toLobby();
  $("ov").style.display="flex";
 }
 
-// ---------- onlayn ----------
+// ---------- təslim ----------
+function surrender(){
+ if(!G||G.over)return;
+ if(!confirm(t("surQ")))return;
+ G.over=true;G.pending=null;
+ G.res={w:"b",gain:0,bl:false,fin:true,sur:"p"};
+ render();
+ if(online){const p=sync();Promise.resolve(p).finally(()=>toLobby())}else toLobby();
+}
+$("flag").onclick=surrender;
+
+// ================= ONLAYN =================
 function toDB(){
  const me=online.role,op=me==="h"?"g":"h";
  const toR=x=>x==="p"?me:x==="b"?op:null;
@@ -296,33 +373,52 @@ function fromDB(s){
  G={hand:s["hand_"+me]||[],bot:s["hand_"+op]||[],yard:s.yard||[],chain:s.chain||[],turn:s.turn===me?"p":"b",
   passes:s.passes||0,scores:{p:s["sc_"+me]||0,b:s["sc_"+op]||0},over:!!s.over,round:s.round||0,tt:s.tt||now(),res,pending:null};
 }
-function sync(){online.ref.child("s").set(toDB()).catch(e=>setSt(t("err")+" "+(e.code||e.message)))}
+function sync(){return online.ref.child("s").set(toDB()).catch(e=>setLb(t("err")+" "+(e.code||e.message)))}
 function startOnline(reset){
  if(online.starting)return;online.starting=true;
  const prev=(online.room&&online.room.s)||{};
  const d=deal(),starter=d.first==="A"?"h":"g",other=starter==="h"?"g":"h";
  const s={hand_h:d.A,hand_g:d.B,yard:d.yard,chain:d.chain,turn:other,passes:0,
   sc_h:reset?0:(prev.sc_h||0),sc_g:reset?0:(prev.sc_g||0),over:false,round:(prev.round||0)+1,tt:now(),res:null};
- online.ref.child("s").set(s).then(()=>{online.starting=false}).catch(e=>{online.starting=false;setSt(t("err")+" "+(e.code||e.message))});
+ online.ref.update({s,rd:null,rdy_h:null,rdy_g:null}).then(()=>{online.starting=false}).catch(e=>{online.starting=false;setLb(t("err")+" "+(e.code||e.message))});
 }
-function onRoom(r){
- if(!online||!r)return;
- online.room=r;
- const op=online.role==="h"?"g":"h";
- online.oppOn=r["p_"+op]!==false;
- if(!r.s){
-  if(online.role==="h"){
-   if(r.guest)startOnline(true);
-   else setSt(t("waitGuest")+"<br><b>"+online.code+"</b>",true);
-  }else setSt(t("wait"));
-  return;
+function enforceReady(){
+ const r=online.room;
+ if(r.rdy_g)online.ref.update({rd:now()+5000,rdy_h:null,rdy_g:null});
+ else{online.ref.update({guest:null,rd:null,rdy_h:null,rdy_g:null,p_g:null});online.lb.update({n:1})}
+}
+function showReady(r){
+ const me=online.role;$("rdy").style.display="flex";
+ if(!r.guest){
+  $("rT").textContent=t("waitOpp");
+  $("rP").textContent=online.pin?t("pin")+": "+online.pin:"";
+  $("rB").style.display="none";return;
  }
- $("menu").style.display="none";
- fromDB(r.s);render();
- if(G.over&&G.res){if(shownRound!==G.round||G.res.sur){if(shownRound!==G.round){shownRound=G.round;showResult()}}}
+ if(me==="h"&&!r.rd)online.ref.update({rd:now()+5000,rdy_h:null,rdy_g:null});
+ const mine=!!r["rdy_"+me];
+ $("rT").textContent=t("readyQ");$("rB").style.display="";$("rB").disabled=mine;
+ $("rP").textContent=mine?t("readyWait"):"";
+ if(r.rdy_h&&r.rdy_g&&me==="h")startOnline(true);
+}
+$("rB").onclick=()=>{if(online){click();online.ref.child("rdy_"+online.role).set(true)}};
+$("rL").onclick=()=>toLobby();
+
+function onRoom(r){
+ if(!online)return;
+ if(r===null)return toLobby(t("closed"));
+ online.room=r;
+ const me=online.role,op=me==="h"?"g":"h";
+ online.oppOn=r["p_"+op]!==false;
+ if(me==="g"&&r.guest!==online.uid)return toLobby(t("kicked"));
+ if(!r.s){showReady(r);return}
+ $("rdy").style.display="none";
+ const pl=G?G.chain.length:0;
+ fromDB(r.s);
+ if(pl>0&&G.chain.length>pl)click();
+ render();
+ if(G.over&&G.res){if(shownRound!==G.round){shownRound=G.round;showResult()}}
  else $("ov").style.display="none";
 }
-function setSt(x,html){$("mSt")[html?"innerHTML":"textContent"]=x;$("menu").style.display="flex"}
 async function login(){
  if(typeof firebase==="undefined")throw new Error("Firebase yüklənmədi (internet?)");
  if(!fbInit){
@@ -332,54 +428,128 @@ async function login(){
  const a=firebase.auth();
  return a.currentUser?a.currentUser.uid:(await a.signInAnonymously()).user.uid;
 }
+function attach(id,role,uid,pin){
+ const db=firebase.database(),ref=db.ref("rooms/"+id);
+ online={id,role,uid,pin,ref,pr:ref.child("p_"+role),lb:db.ref("lobby/"+id),conn:db.ref(".info/connected"),chat:ref.child("chat"),room:null,starting:false,oppOn:true,kicked:0};
+ online.conn.on("value",s=>{if(s.val()&&online){online.pr.onDisconnect().set(false);online.pr.set(true)}});
+ ref.on("value",s=>onRoom(s.val()),e=>toLobby(t("err")+" "+(e.code||e.message)));
+ online.chat.limitToLast(30).on("value",s=>renderChat(s.val()));
+ G=null;shownRound=null;fired=0;
+ hideScr();$("chatB").style.display="";labels();render();
+}
 function leave(){
  if(online){
-  try{online.pr.onDisconnect().cancel();online.pr.set(false)}catch(e){}
-  online.conn.off();online.ref.off();online=null;
+  const o=online;online=null;
+  try{
+   o.conn.off();o.ref.off();o.chat.off();
+   o.pr.onDisconnect().cancel();
+   const started=!!(o.room&&o.room.s);
+   if(o.role==="h"){o.lb.onDisconnect().cancel();o.lb.remove();if(!started)o.ref.remove();else o.pr.set(false)}
+   else if(!started){o.ref.update({guest:null,rd:null,rdy_h:null,rdy_g:null,p_g:null});o.lb.update({n:1})}
+   else o.pr.set(false);
+  }catch(e){}
  }
- shownRound=null;G=null;fired=0;$("ov").style.display="none";
+ G=null;shownRound=null;
+ $("rdy").style.display="none";$("ov").style.display="none";$("chat").style.display="none";
+ $("chatB").style.display="none";
 }
-function attach(code,role,uid){
- leave();
- const db=firebase.database(),ref=db.ref("rooms/"+code),pr=ref.child("p_"+role),conn=db.ref(".info/connected");
- online={code,role,uid,ref,pr,conn,room:null,starting:false,oppOn:true};
- conn.on("value",s=>{if(s.val()){pr.onDisconnect().set(false);pr.set(true)}});
- ref.on("value",s=>onRoom(s.val()),e=>setSt(t("err")+" "+(e.code||e.message)));
- labels();
+
+// ---------- çat ----------
+function renderChat(v){
+ const L=$("cl");L.innerHTML="";
+ Object.values(v||{}).forEach(x=>{
+  const d=document.createElement("div"),b=document.createElement("b");
+  b.textContent=(online&&x.r===online.role?t("you"):t("opp"))+": ";
+  d.append(b,document.createTextNode(String(x.m||"")));L.appendChild(d);
+ });
+ L.scrollTop=L.scrollHeight;
 }
-$("mNew").onclick=async()=>{
+function sendChat(){
+ const m=$("cm").value.trim().slice(0,100);
+ if(!m||!online)return;
+ online.chat.push({r:online.role,m});$("cm").value="";
+}
+$("cs").onclick=sendChat;
+$("cm").onkeydown=e=>{if(e.key==="Enter")sendChat()};
+$("chatB").onclick=()=>{const c=$("chat");c.style.display=c.style.display==="flex"?"none":"flex"};
+
+// ================= LOBİ =================
+function hideScr(){document.querySelectorAll(".scr").forEach(e=>{if(e.id!=="rdy")e.style.display="none"})}
+function setLb(x){$("lSt").textContent=x}
+async function showLobby(){
  try{
-  setSt(t("wait"));
-  const uid=await login();
-  const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code="";const rnd=crypto.getRandomValues(new Uint8Array(6));
-  for(const n of rnd)code+=A[n%A.length];
-  await firebase.database().ref("rooms/"+code).set({host:uid,t:Date.now()});
-  attach(code,"h",uid);
- }catch(e){setSt(t("err")+" "+(e.code||e.message))}
-};
-$("mJoin").onclick=async()=>{
- const code=$("mCode").value.toUpperCase().trim();
- if(code.length!==6)return setSt(t("fill"));
+  await login();
+  if(!lobbyOn){lobbyOn=true;firebase.database().ref("lobby").on("value",s=>{lobbyData=s.val()||{};renderList()},e=>setLb(t("err")+" "+(e.code||e.message)))}
+ }catch(e){setLb(t("err")+" "+(e.code||e.message))}
+}
+function toLobby(msg){
+ leave();hideScr();
+ $("lobby").style.display="flex";setLb(msg||"");renderList();showLobby();
+}
+function renderList(){
+ const L=$("list");L.innerHTML="";
+ $("tG").className=tab==="g"?"on":"";$("tP").className=tab==="p"?"on":"";
+ const ids=Object.keys(lobbyData).filter(k=>!!lobbyData[k].pr===(tab==="p")).sort((a,b)=>lobbyData[b].t-lobbyData[a].t);
+ if(!ids.length){L.textContent=t("none");return}
+ for(const id of ids){
+  const r=lobbyData[id],b=document.createElement("button");b.className="rm";
+  b.textContent=(r.pr?"🔒":"🌐")+"  "+r.c+"  ·  "+r.m+"  ·  "+r.u+"  ·  "+r.n+"/"+r.x;
+  b.disabled=r.n>=r.x;b.onclick=()=>joinRoom(id,r.pr);L.appendChild(b);
+ }
+}
+$("tG").onclick=()=>{tab="g";renderList()};
+$("tP").onclick=()=>{tab="p";renderList()};
+async function createRoom(){
  try{
-  setSt(t("wait"));
-  const uid=await login();
-  const ref=firebase.database().ref("rooms/"+code);
+  let pin=null;
+  if(tab==="p"){pin=prompt(t("pinAsk"));if(pin===null)return;if(!/^\d{4}$/.test(pin))return setLb(t("pinBad"))}
+  setLb(t("wait"));
+  const uid=await login(),db=firebase.database();
+  const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let id="";
+  for(const n of crypto.getRandomValues(new Uint8Array(8)))id+=A[n%A.length];
+  const room={host:uid,t:Date.now()};if(pin)room.pin=pin;
+  await db.ref("rooms/"+id).set(room);
+  const lb=db.ref("lobby/"+id);
+  await lb.set({m:"1v1",c:CC,u:"P"+uid.slice(0,4),n:1,x:2,pr:!!pin,t:Date.now()});
+  lb.onDisconnect().remove();
+  attach(id,"h",uid,pin);
+ }catch(e){setLb(t("err")+" "+(e.code||e.message))}
+}
+async function joinRoom(id,pr){
+ try{
+  let pin=null;
+  if(pr){pin=prompt(t("pinAsk"));if(pin===null)return}
+  setLb(t("wait"));
+  const uid=await login(),db=firebase.database(),ref=db.ref("rooms/"+id);
   const r=(await ref.once("value")).val();
-  if(!r)return setSt(t("notFound"));
+  if(!r)return setLb(t("nf"));
+  if(r.pin&&r.pin!==pin)return setLb(t("pinWrong"));
   let role;
   if(r.host===uid)role="h";
   else if(r.guest===uid)role="g";
-  else if(!r.guest){await ref.child("guest").set(uid);role="g"}
-  else return setSt(t("full"));
-  attach(code,role,uid);
- }catch(e){setSt(t("err")+" "+(e.code||e.message))}
-};
-$("mBot").onclick=()=>{leave();$("menu").style.display="none";labels();newMatch()};
-$("mClose").onclick=()=>{$("menu").style.display="none"};
-$("nw").onclick=()=>{$("mSt").textContent="";$("mClose").style.display=G?"":"none";$("menu").style.display="flex"};
+  else if(!r.guest){await ref.child("guest").set(uid);role="g";db.ref("lobby/"+id).update({n:2})}
+  else return setLb(t("full"));
+  attach(id,role,uid,r.pin||null);
+ }catch(e){setLb(t("err")+" "+(e.code||e.message))}
+}
+$("lNew").onclick=createRoom;
+$("lBot").onclick=()=>{leave();hideScr();labels();newMatch()};
 
-// ---------- çəkmə ----------
+// ---------- menyu / ayarlar ----------
+$("menuB").onclick=()=>{
+ $("mSur").style.display=(G&&!G.over)?"":"none";
+ $("menuScr").style.display="flex";
+};
+$("mRes").onclick=()=>hideScr();
+$("mSur").onclick=()=>{hideScr();surrender()};
+$("mLob").onclick=()=>toLobby();
+$("mSet").onclick=()=>{setFrom="menuScr";$("menuScr").style.display="none";$("setScr").style.display="flex"};
+$("lSet").onclick=()=>{setFrom="lobby";$("lobby").style.display="none";$("setScr").style.display="flex"};
+$("sBack").onclick=()=>{$("setScr").style.display="none";$(setFrom).style.display="flex"};
+document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{lang=b.dataset.l;localStorage.setItem("dlang",lang);labels();render();renderList()});
+$("lvl").onchange=e=>{level=e.target.value;localStorage.setItem("dlvl",level)};
+
+// ================= ÇƏKMƏ =================
 function render(msg){
  if(!G)return;
  $("sYou").textContent=G.scores.p;$("sBot").textContent=G.scores.b;
@@ -394,38 +564,33 @@ function render(msg){
  $("draw").disabled=!(none&&G.yard.length);
  $("pass").disabled=!(none&&!G.yard.length);
  const ch2=G.pending!=null;
- $("L").style.display=$("R").style.display=ch2?"none":"";
  $("L").style.display=$("R").style.display=ch2?"":"none";
  $("draw").style.display=$("pass").style.display=ch2?"none":"";
  $("flag").disabled=G.over;
- // rəqib avatarı + bağlantı ikonu
  const st=$("oppSt"),offl=!!online&&online.oppOn===false;
  $("oppAv").textContent=online?"👤":"🤖";
- if(online){st.textContent=offl?"🔴":"🟢";st.className=offl?"off":"";st.title=offl?t("oppOff"):""}
+ if(online){st.textContent=offl?"🔴":"🟢";st.className=offl?"off":""}
  else{st.textContent="";st.className=""}
  let m=msg;
- if(!m)m=G.over?"":!myTurn?(online?t("oppTurn"):t("botTurn")):none?(G.yard.length?t("noMove"):t("mustPass")):t("yourTurn");
+ if(!m)m=G.over?"":!myTurn?(online?t("ot"):t("bt")):none?(G.yard.length?t("noMove"):t("mustPass")):t("yt");
  if(offl&&!G.over)m+=" · "+t("oppOff");
  $("msg").textContent=m;
 }
 function labels(){
- $("lbBot").textContent=bn();$("lbYou").textContent=t("you");
- $("draw").textContent=t("draw");$("pass").textContent=t("pass");
- $("L").textContent=t("left");$("R").textContent=t("right");$("nw").textContent=t("nw");
- $("mBot").textContent=t("vsBot");$("mNew").textContent=t("create");$("mJoin").textContent=t("join");
- $("mClose").textContent=t("close");$("mCode").placeholder=t("codePh");
- $("flag").title=t("flag");
- $("lang").textContent=lang.toUpperCase();
- $("lvl").style.display=online?"none":"";
+ const T={lbBot:bn(),lbYou:t("you"),draw:t("draw"),pass:t("pass"),L:t("left"),R:t("right"),
+  lT:t("lobby"),tG:t("glob"),tP:t("priv"),lNew:t("create"),lBot:t("bot"),
+  mT:t("menu"),mRes:t("resume"),mSet:t("sett"),mSur:t("sur"),mLob:t("toLobby"),
+  sT:t("sett"),sL:t("lang"),sLv:t("level"),sS:t("snd"),sM:t("mus"),sBack:t("back"),
+  rL:t("toLobby"),cs:t("send")};
+ for(const k in T)$(k).textContent=T[k];
+ $("cm").placeholder=t("chatPh");
  const s=$("lvl");s.innerHTML="";
  for(const k of ["easy","normal","hard"]){const o=document.createElement("option");o.value=k;o.textContent=t(k);if(k===level)o.selected=true;s.appendChild(o)}
- document.documentElement.lang=lang;
+ document.documentElement.lang=lang;syncSet();
 }
-$("lang").onclick=()=>{lang=lang==="az"?"en":"az";localStorage.setItem("dlang",lang);labels();render()};
-$("lvl").onchange=e=>{level=e.target.value;localStorage.setItem("dlvl",level)};
 labels();
-$("mClose").style.display="none";
-$("menu").style.display="flex";
+$("chatB").style.display="none";
+toLobby();
 </script>
 </body>
 </html>
