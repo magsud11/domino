@@ -1,1 +1,217 @@
-<h1>Salam Domino</h1>
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Domino 101</title>
+<style>
+:root{--felt:#1f4d3a;--felt2:#17382b;--wood:#3b2a1e;--ivory:#f3ecda;--ink:#1b1b1b;--brass:#c9a24b;--txt:#f3ecda}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--wood);color:var(--txt);font-family:Georgia,"Times New Roman",serif;display:flex;flex-direction:column;height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#2a1d14}
+header h1{font-size:19px;margin:0;flex:1;letter-spacing:.5px}
+button,select{font:inherit;background:var(--brass);color:#2a1d14;border:0;border-radius:8px;padding:8px 10px;font-weight:bold}
+button:disabled{opacity:.35}
+select{padding:7px 4px}
+main{flex:1;display:flex;flex-direction:column;background:radial-gradient(ellipse at center,var(--felt),var(--felt2));min-height:0}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font-size:15px}
+.bar b{color:var(--brass)}
+#botTiles{display:flex;gap:3px;justify-content:center;padding:4px 8px;flex-wrap:wrap;min-height:34px}
+.back{width:18px;height:32px;border-radius:4px;background:#0e2a20;border:1px solid var(--brass)}
+#board{flex:1;overflow:auto;display:flex;min-height:0}
+#chain{display:flex;align-items:center;margin:auto;padding:12px}
+#msg{text-align:center;padding:6px 12px;min-height:30px;font-size:16px}
+#ctl{display:flex;gap:8px;justify-content:center;padding:4px 8px 8px;flex-wrap:wrap}
+#hand{display:flex;gap:6px;overflow-x:auto;padding:8px 12px 12px;background:#2a1d14;justify-content:safe center}
+.tile{--s:28px;display:flex;background:var(--ivory);border-radius:calc(var(--s)*.2);border:1px solid #9d9580;box-shadow:0 2px 3px #0008;flex:none;margin:1px}
+.tile.v{flex-direction:column}
+.half{width:var(--s);height:var(--s);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:calc(var(--s)*.14);place-items:center}
+.tile .half:first-child{border-right:1px solid #b8b09a}
+.tile.v .half:first-child{border-right:0;border-bottom:1px solid #b8b09a}
+.pip{width:calc(var(--s)*.2);height:calc(var(--s)*.2);border-radius:50%;background:var(--ink)}
+.tile.big{--s:38px}
+.tile.big.ok{outline:3px solid var(--brass);transform:translateY(-6px)}
+.tile.big:not(.ok){opacity:.55}
+.tile.sm{--s:24px}
+#ov{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
+#ov div{background:var(--wood);border:2px solid var(--brass);border-radius:14px;padding:22px;text-align:center;max-width:320px}
+#ov h2{margin:0 0 8px}
+#ov p{margin:6px 0 14px;line-height:1.4;white-space:pre-line}
+</style>
+</head>
+<body>
+<header>
+<h1>Domino 101</h1>
+<select id="lvl"></select>
+<button id="lang">AZ</button>
+<button id="nw"></button>
+</header>
+<main>
+<div class="bar"><span><span id="lbBot"></span>: <b id="sBot">0</b></span><span id="yard"></span><span><span id="lbYou"></span>: <b id="sYou">0</b></span></div>
+<div id="botTiles"></div>
+<div id="board"><div id="chain"></div></div>
+<div id="msg"></div>
+<div id="ctl"><button id="draw"></button><button id="pass"></button><button id="L"></button><button id="R"></button></div>
+<div id="hand"></div>
+</main>
+<div id="ov"><div><h2 id="ovT"></h2><p id="ovP"></p><button id="ovB"></button></div></div>
+<script>
+const TXT={
+az:{bot:"Bot",you:"Sən",yard:"Anbar",draw:"Daş çək",pass:"Pas",nw:"Yeni oyun",left:"◀ Sol",right:"Sağ ▶",
+easy:"Asan",normal:"Orta",hard:"Çətin",yourTurn:"Sənin növbən",botTurn:"Botun növbəsi...",noMove:"Uyğun daş yoxdur: anbardan çək",
+mustPass:"Anbar boşdur: pas de",botDraw:"Bot anbardan daş çəkdi",botPass:"Bot pas dedi",choose:"Hansı tərəfə?",
+start:"Başlayır:",rW:"Raund sənindir!",rL:"Raund botundur",rD:"Raund bərabərdir",blocked:"Oyun bloklandı.",pts:"xal",
+next:"Növbəti raund",mW:"Sən qazandın! 🏆",mL:"Bot qazandı",again:"Yenidən oyna"},
+en:{bot:"Bot",you:"You",yard:"Stock",draw:"Draw",pass:"Pass",nw:"New game",left:"◀ Left",right:"Right ▶",
+easy:"Easy",normal:"Normal",hard:"Hard",yourTurn:"Your turn",botTurn:"Bot is thinking...",noMove:"No playable tile: draw from stock",
+mustPass:"Stock is empty: pass",botDraw:"Bot drew a tile",botPass:"Bot passed",choose:"Which side?",
+start:"Starts:",rW:"You won the round!",rL:"Bot won the round",rD:"Round is a tie",blocked:"Game blocked.",pts:"pts",
+next:"Next round",mW:"You won the match! 🏆",mL:"Bot won the match",again:"Play again"}};
+let lang=localStorage.getItem("dlang")||"az",level=localStorage.getItem("dlvl")||"normal";
+const t=k=>TXT[lang][k];
+const $=id=>document.getElementById(id);
+const TARGET=101;
+let G;
+
+const PIPS=[[],[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
+function half(n){const h=document.createElement("div");h.className="half";
+ for(let i=0;i<9;i++){const c=document.createElement("div");if(PIPS[n].includes(i))c.className="pip";h.appendChild(c)}return h}
+function tileEl(a,b,cls){const e=document.createElement("div");e.className="tile "+(a===b?"v ":"")+cls;e.append(half(a),half(b));return e}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+const pip=h=>h.reduce((s,x)=>s+x[0]+x[1],0);
+const ends=()=>[G.chain[0][0],G.chain[G.chain.length-1][1]];
+function sides(tl){const [l,r]=ends(),s=[];
+ if(tl[0]===l||tl[1]===l)s.push("L");
+ if(tl[0]===r||tl[1]===r)s.push("R");return s}
+const legal=h=>h.map((x,i)=>sides(x).length?i:-1).filter(i=>i>=0);
+const nm=w=>w==="p"?t("you"):t("bot");
+
+function newMatch(){G={scores:{p:0,b:0},over:false};newRound()}
+function newRound(){
+ const all=[];for(let i=0;i<7;i++)for(let j=i;j<7;j++)all.push([i,j]);
+ shuffle(all);
+ Object.assign(G,{hand:all.splice(0,7),bot:all.splice(0,7),yard:all,chain:[],passes:0,over:false,pending:null});
+ let best=null,who=null;
+ const score=x=>(x[0]===x[1]?100:0)+x[0]+x[1];
+ for(const [name,h] of [["p",G.hand],["b",G.bot]])for(const x of h)if(!best||score(x)>score(best)){best=x;who=name}
+ const h=who==="p"?G.hand:G.bot;h.splice(h.indexOf(best),1);
+ G.chain.push([best[0],best[1]]);
+ G.turn=who==="p"?"b":"p";
+ render(t("start")+" "+nm(who));
+ if(G.turn==="b")botMove();
+}
+
+function place(h,i,side){
+ const x=h.splice(i,1)[0];let a=x[0],b=x[1];
+ if(side==="L"){const l=G.chain[0][0];if(b!==l)[a,b]=[b,a];G.chain.unshift([a,b])}
+ else{const r=G.chain[G.chain.length-1][1];if(a!==r)[a,b]=[b,a];G.chain.push([a,b])}
+ G.passes=0;
+}
+function afterMove(who){
+ const h=who==="p"?G.hand:G.bot;
+ if(h.length===0)return endRound(who,false);
+ G.turn=who==="p"?"b":"p";G.pending=null;
+ render();
+ if(G.turn==="b")botMove();
+}
+function doPass(who){
+ G.passes++;
+ if(G.passes>=2)return endRound(null,true);
+ G.turn=who==="p"?"b":"p";render(who==="b"?t("botPass"):"");
+ if(G.turn==="b")botMove();
+}
+
+function playerTile(i){
+ if(G.turn!=="p"||G.over)return;
+ const s=sides(G.hand[i]);if(!s.length)return;
+ const [l,r]=ends();
+ if(s.length===1||l===r){place(G.hand,i,s[0]);return afterMove("p")}
+ G.pending=i;render(t("choose"));
+}
+$("L").onclick=()=>{if(G.pending!=null){place(G.hand,G.pending,"L");afterMove("p")}};
+$("R").onclick=()=>{if(G.pending!=null){place(G.hand,G.pending,"R");afterMove("p")}};
+$("draw").onclick=()=>{if(G.turn==="p"&&!legal(G.hand).length&&G.yard.length){G.hand.push(G.yard.pop());render()}};
+$("pass").onclick=()=>{if(G.turn==="p"&&!legal(G.hand).length&&!G.yard.length)doPass("p")};
+
+function botMove(){
+ setTimeout(()=>{
+  if(G.over||G.turn!=="b")return;
+  const mv=legal(G.bot);
+  if(!mv.length){
+   if(G.yard.length){G.bot.push(G.yard.pop());render(t("botDraw"));return botMove()}
+   return doPass("b");
+  }
+  let pick;
+  if(level==="easy")pick=mv[Math.floor(Math.random()*mv.length)];
+  else if(level==="normal")pick=mv.sort((a,b)=>G.bot[b][0]+G.bot[b][1]-G.bot[a][0]-G.bot[a][1])[0];
+  else{
+   let bs=-1;for(const i of mv){const x=G.bot[i];
+    for(const sd of sides(x)){
+     const [l,r]=ends();const open=sd==="L"?(x[0]===l?x[1]:x[0]):(x[0]===r?x[1]:x[0]);
+     const rest=G.bot.filter((_,k)=>k!==i);
+     const sc=x[0]+x[1]+3*rest.filter(y=>y[0]===open||y[1]===open).length+(x[0]===x[1]?4:0);
+     if(sc>bs){bs=sc;pick=i}}}
+  }
+  const x=G.bot[pick],sd=sides(x);
+  let side=sd[0];
+  if(sd.length>1&&level==="hard"){
+   const [l,r]=ends();const cnt=v=>G.bot.filter((y,k)=>k!==pick&&(y[0]===v||y[1]===v)).length;
+   const oL=x[0]===l?x[1]:x[0],oR=x[0]===r?x[1]:x[0];side=cnt(oL)>=cnt(oR)?"L":"R"}
+  place(G.bot,pick,side);afterMove("b");
+ },700);
+}
+
+function endRound(winner,blocked){
+ G.over=true;let gain=0;
+ const pp=pip(G.hand),bp=pip(G.bot);
+ if(!blocked)gain=winner==="p"?bp:pp;
+ else{winner=pp<bp?"p":bp<pp?"b":null;gain=Math.abs(pp-bp)}
+ if(winner)G.scores[winner]+=gain;
+ render();
+ const fin=G.scores.p>=TARGET||G.scores.b>=TARGET;
+ const txt=winner==="p"?t("rW"):winner==="b"?t("rL"):t("rD");
+ $("ovT").textContent=fin?(G.scores.p>=G.scores.b?t("mW"):t("mL")):txt;
+ $("ovP").textContent=(blocked?t("blocked")+" ":"")+(winner&&gain?nm(winner)+" +"+gain+" "+t("pts"):"")+"\n"+G.scores.p+" : "+G.scores.b;
+ $("ovB").textContent=fin?t("again"):t("next");
+ $("ovB").onclick=()=>{$("ov").style.display="none";fin?newMatch():newRound()};
+ setTimeout(()=>$("ov").style.display="flex",600);
+}
+
+function render(msg){
+ $("sYou").textContent=G.scores.p;$("sBot").textContent=G.scores.b;
+ $("yard").textContent=t("yard")+": "+G.yard.length;
+ const bt=$("botTiles");bt.innerHTML="";G.bot.forEach(()=>{const d=document.createElement("div");d.className="back";bt.appendChild(d)});
+ const ch=$("chain");ch.innerHTML="";G.chain.forEach(x=>ch.appendChild(tileEl(x[0],x[1],"sm")));
+ const bd=$("board");bd.scrollLeft=(bd.scrollWidth-bd.clientWidth)/2;
+ const lg=G.turn==="p"&&!G.over?legal(G.hand):[];
+ const hd=$("hand");hd.innerHTML="";
+ G.hand.forEach((x,i)=>{const e=tileEl(x[0],x[1],"big"+(lg.includes(i)?" ok":""));e.onclick=()=>playerTile(i);hd.appendChild(e)});
+ const myTurn=G.turn==="p"&&!G.over,none=myTurn&&!lg.length;
+ $("draw").disabled=!(none&&G.yard.length);
+ $("pass").disabled=!(none&&!G.yard.length);
+ const ch2=G.pending!=null;
+ $("L").style.display=$("R").style.display=ch2?"":"none";
+ $("draw").style.display=$("pass").style.display=ch2?"none":"";
+ let m=msg;
+ if(!m)m=G.over?"":!myTurn?t("botTurn"):none?(G.yard.length?t("noMove"):t("mustPass")):t("yourTurn");
+ $("msg").textContent=m;
+}
+
+function labels(){
+ $("lbBot").textContent=t("bot");$("lbYou").textContent=t("you");
+ $("draw").textContent=t("draw");$("pass").textContent=t("pass");
+ $("L").textContent=t("left");$("R").textContent=t("right");$("nw").textContent=t("nw");
+ $("lang").textContent=lang.toUpperCase();
+ const s=$("lvl");s.innerHTML="";
+ for(const k of ["easy","normal","hard"]){const o=document.createElement("option");o.value=k;o.textContent=t(k);if(k===level)o.selected=true;s.appendChild(o)}
+ document.documentElement.lang=lang;
+}
+$("lang").onclick=()=>{lang=lang==="az"?"en":"az";localStorage.setItem("dlang",lang);labels();render()};
+$("lvl").onchange=e=>{level=e.target.value;localStorage.setItem("dlvl",level)};
+$("nw").onclick=()=>{$("ov").style.display="none";newMatch()};
+labels();newMatch();
+</script>
+</body>
+</html>
