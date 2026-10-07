@@ -11,7 +11,7 @@ html,body{height:100%;margin:0}
 body{background:var(--wood);color:var(--txt);font-family:Georgia,"Times New Roman",serif;display:flex;flex-direction:column;height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 header{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#2a1d14}
 header h1{font-size:19px;margin:0;flex:1;letter-spacing:.5px}
-button,select{font:inherit;background:var(--brass);color:#2a1d14;border:0;border-radius:8px;padding:8px 10px;font-weight:bold}
+button,select,input{font:inherit;background:var(--brass);color:#2a1d14;border:0;border-radius:8px;padding:8px 10px;font-weight:bold}
 button:disabled{opacity:.35}
 select{padding:7px 4px}
 main{flex:1;display:flex;flex-direction:column;background:radial-gradient(ellipse at center,var(--felt),var(--felt2));min-height:0}
@@ -34,10 +34,14 @@ main{flex:1;display:flex;flex-direction:column;background:radial-gradient(ellips
 .tile.big.ok{outline:3px solid var(--brass);transform:translateY(-6px)}
 .tile.big:not(.ok){opacity:.55}
 .tile.sm{--s:24px}
-#ov{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
-#ov div{background:var(--wood);border:2px solid var(--brass);border-radius:14px;padding:22px;text-align:center;max-width:320px}
-#ov h2{margin:0 0 8px}
+#ov,#menu{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
+#ov>div,#menu>div{background:var(--wood);border:2px solid var(--brass);border-radius:14px;padding:22px;text-align:center;width:100%;max-width:320px}
+#ov h2,#menu h2{margin:0 0 10px}
 #ov p{margin:6px 0 14px;line-height:1.4;white-space:pre-line}
+#menu button,#menu input{display:block;width:100%;margin:8px 0}
+#menu input{text-align:center;letter-spacing:4px;font-size:20px;background:var(--ivory);text-transform:uppercase}
+#mSt{min-height:24px;line-height:1.4;margin:6px 0 0;word-break:break-word}
+#mSt b{font-size:28px;letter-spacing:5px;color:var(--brass)}
 </style>
 </head>
 <body>
@@ -56,29 +60,58 @@ main{flex:1;display:flex;flex-direction:column;background:radial-gradient(ellips
 <div id="hand"></div>
 </main>
 <div id="ov"><div><h2 id="ovT"></h2><p id="ovP"></p><button id="ovB"></button></div></div>
+<div id="menu"><div>
+<h2 id="mT">Domino 101</h2>
+<button id="mBot"></button>
+<button id="mNew"></button>
+<input id="mCode" maxlength="6" autocomplete="off">
+<button id="mJoin"></button>
+<p id="mSt"></p>
+<button id="mClose"></button>
+</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
+// ===== FIREBASE CONFIG (apiKey-i öz ekranından yenidən kopyala, əgər xəta versə) =====
+const CFG={
+ apiKey:"AIzaSyAIr9Bib96P0rARlNBt59ulzE5Rw9siCtM",
+ authDomain:"domino-24082.firebaseapp.com",
+ databaseURL:"https://domino-24082-default-rtdb.europe-west1.firebasedatabase.app",
+ projectId:"domino-24082",
+ storageBucket:"domino-24082.firebasestorage.app",
+ messagingSenderId:"962828585918",
+ appId:"1:962828585918:web:d7d4c29b65779c46d647ef"
+};
+
 const TXT={
-az:{bot:"Bot",you:"Sən",yard:"Anbar",draw:"Daş çək",pass:"Pas",nw:"Yeni oyun",left:"◀ Sol",right:"Sağ ▶",
-easy:"Asan",normal:"Orta",hard:"Çətin",yourTurn:"Sənin növbən",botTurn:"Botun növbəsi...",noMove:"Uyğun daş yoxdur: anbardan çək",
+az:{bot:"Bot",opp:"Rəqib",you:"Sən",yard:"Anbar",draw:"Daş çək",pass:"Pas",nw:"Menyu",left:"◀ Sol",right:"Sağ ▶",
+easy:"Asan",normal:"Orta",hard:"Çətin",yourTurn:"Sənin növbən",botTurn:"Botun növbəsi...",oppTurn:"Rəqibin növbəsi...",noMove:"Uyğun daş yoxdur: anbardan çək",
 mustPass:"Anbar boşdur: pas de",botDraw:"Bot anbardan daş çəkdi",botPass:"Bot pas dedi",choose:"Hansı tərəfə?",
-start:"Başlayır:",rW:"Raund sənindir!",rL:"Raund botundur",rD:"Raund bərabərdir",blocked:"Oyun bloklandı.",pts:"xal",
-next:"Növbəti raund",mW:"Sən qazandın! 🏆",mL:"Bot qazandı",again:"Yenidən oyna"},
-en:{bot:"Bot",you:"You",yard:"Stock",draw:"Draw",pass:"Pass",nw:"New game",left:"◀ Left",right:"Right ▶",
-easy:"Easy",normal:"Normal",hard:"Hard",yourTurn:"Your turn",botTurn:"Bot is thinking...",noMove:"No playable tile: draw from stock",
+start:"Başlayır:",rW:"Raund sənindir!",rL:"Raund rəqibindir",rD:"Raund bərabərdir",blocked:"Oyun bloklandı.",pts:"xal",
+next:"Növbəti raund",mW:"Sən qazandın! 🏆",mL:"Rəqib qazandı",again:"Yenidən oyna",
+vsBot:"Botla oyna",create:"Otaq yarat",join:"Otağa qoşul",codePh:"KOD",close:"Bağla",
+waitGuest:"Dostuna bu kodu göndər:",waitHost:"Otaq sahibinin davam etməsi gözlənilir...",notFound:"Otaq tapılmadı",full:"Otaq doludur",err:"Xəta:",wait:"Gözlə...",fill:"6 simvollu kodu yaz"},
+en:{bot:"Bot",opp:"Opponent",you:"You",yard:"Stock",draw:"Draw",pass:"Pass",nw:"Menu",left:"◀ Left",right:"Right ▶",
+easy:"Easy",normal:"Normal",hard:"Hard",yourTurn:"Your turn",botTurn:"Bot is thinking...",oppTurn:"Opponent's turn...",noMove:"No playable tile: draw from stock",
 mustPass:"Stock is empty: pass",botDraw:"Bot drew a tile",botPass:"Bot passed",choose:"Which side?",
-start:"Starts:",rW:"You won the round!",rL:"Bot won the round",rD:"Round is a tie",blocked:"Game blocked.",pts:"pts",
-next:"Next round",mW:"You won the match! 🏆",mL:"Bot won the match",again:"Play again"}};
+start:"Starts:",rW:"You won the round!",rL:"Opponent won the round",rD:"Round is a tie",blocked:"Game blocked.",pts:"pts",
+next:"Next round",mW:"You won the match! 🏆",mL:"Opponent won the match",again:"Play again",
+vsBot:"Play vs bot",create:"Create room",join:"Join room",codePh:"CODE",close:"Close",
+waitGuest:"Send this code to your friend:",waitHost:"Waiting for the host to continue...",notFound:"Room not found",full:"Room is full",err:"Error:",wait:"Please wait...",fill:"Enter the 6-character code"}};
 let lang=localStorage.getItem("dlang")||"az",level=localStorage.getItem("dlvl")||"normal";
 const t=k=>TXT[lang][k];
 const $=id=>document.getElementById(id);
 const TARGET=101;
-let G;
+let G=null,online=null,fbInit=false,shownRound=null;
+const bn=()=>online?t("opp"):t("bot");
+const nm=w=>w==="p"?t("you"):bn();
 
 const PIPS=[[],[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
 function half(n){const h=document.createElement("div");h.className="half";
  for(let i=0;i<9;i++){const c=document.createElement("div");if(PIPS[n].includes(i))c.className="pip";h.appendChild(c)}return h}
 function tileEl(a,b,cls){const e=document.createElement("div");e.className="tile "+(a===b?"v ":"")+cls;e.append(half(a),half(b));return e}
-
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=crypto.getRandomValues(new Uint32Array(1))[0]%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
 const pip=h=>h.reduce((s,x)=>s+x[0]+x[1],0);
 const ends=()=>[G.chain[0][0],G.chain[G.chain.length-1][1]];
@@ -86,23 +119,31 @@ function sides(tl){const [l,r]=ends(),s=[];
  if(tl[0]===l||tl[1]===l)s.push("L");
  if(tl[0]===r||tl[1]===r)s.push("R");return s}
 const legal=h=>h.map((x,i)=>sides(x).length?i:-1).filter(i=>i>=0);
-const nm=w=>w==="p"?t("you"):t("bot");
 
-function newMatch(){G={scores:{p:0,b:0},over:false};newRound()}
-function newRound(){
+// ---------- paylama ----------
+function deal(){
  const all=[];for(let i=0;i<7;i++)for(let j=i;j<7;j++)all.push([i,j]);
  shuffle(all);
- Object.assign(G,{hand:all.splice(0,7),bot:all.splice(0,7),yard:all,chain:[],passes:0,over:false,pending:null});
- let best=null,who=null;
+ const A=all.splice(0,7),B=all.splice(0,7);
+ let best=null,first=null;
  const score=x=>(x[0]===x[1]?100:0)+x[0]+x[1];
- for(const [name,h] of [["p",G.hand],["b",G.bot]])for(const x of h)if(!best||score(x)>score(best)){best=x;who=name}
- const h=who==="p"?G.hand:G.bot;h.splice(h.indexOf(best),1);
- G.chain.push([best[0],best[1]]);
+ for(const [n,h] of [["A",A],["B",B]])for(const x of h)if(!best||score(x)>score(best)){best=x;first=n}
+ const h=first==="A"?A:B;h.splice(h.indexOf(best),1);
+ return {A,B,yard:all,chain:[[best[0],best[1]]],first};
+}
+
+// ---------- bot rejimi ----------
+function newMatch(){G={scores:{p:0,b:0},over:false};newRound()}
+function newRound(){
+ const d=deal();
+ Object.assign(G,{hand:d.A,bot:d.B,yard:d.yard,chain:d.chain,passes:0,over:false,pending:null,res:null});
+ const who=d.first==="A"?"p":"b";
  G.turn=who==="p"?"b":"p";
  render(t("start")+" "+nm(who));
  if(G.turn==="b")botMove();
 }
 
+// ---------- hərəkətlər ----------
 function place(h,i,side){
  const x=h.splice(i,1)[0];let a=x[0],b=x[1];
  if(side==="L"){const l=G.chain[0][0];if(b!==l)[a,b]=[b,a];G.chain.unshift([a,b])}
@@ -114,17 +155,16 @@ function afterMove(who){
  if(h.length===0)return endRound(who,false);
  G.turn=who==="p"?"b":"p";G.pending=null;
  render();
- if(G.turn==="b")botMove();
+ if(online)sync();else if(G.turn==="b")botMove();
 }
 function doPass(who){
  G.passes++;
  if(G.passes>=2)return endRound(null,true);
  G.turn=who==="p"?"b":"p";render(who==="b"?t("botPass"):"");
- if(G.turn==="b")botMove();
+ if(online)sync();else if(G.turn==="b")botMove();
 }
-
 function playerTile(i){
- if(G.turn!=="p"||G.over)return;
+ if(!G||G.turn!=="p"||G.over)return;
  const s=sides(G.hand[i]);if(!s.length)return;
  const [l,r]=ends();
  if(s.length===1||l===r){place(G.hand,i,s[0]);return afterMove("p")}
@@ -132,12 +172,12 @@ function playerTile(i){
 }
 $("L").onclick=()=>{if(G.pending!=null){place(G.hand,G.pending,"L");afterMove("p")}};
 $("R").onclick=()=>{if(G.pending!=null){place(G.hand,G.pending,"R");afterMove("p")}};
-$("draw").onclick=()=>{if(G.turn==="p"&&!legal(G.hand).length&&G.yard.length){G.hand.push(G.yard.pop());render()}};
-$("pass").onclick=()=>{if(G.turn==="p"&&!legal(G.hand).length&&!G.yard.length)doPass("p")};
+$("draw").onclick=()=>{if(G.turn==="p"&&!G.over&&!legal(G.hand).length&&G.yard.length){G.hand.push(G.yard.pop());render();if(online)sync()}};
+$("pass").onclick=()=>{if(G.turn==="p"&&!G.over&&!legal(G.hand).length&&!G.yard.length)doPass("p")};
 
 function botMove(){
  setTimeout(()=>{
-  if(G.over||G.turn!=="b")return;
+  if(online||G.over||G.turn!=="b")return;
   const mv=legal(G.bot);
   if(!mv.length){
    if(G.yard.length){G.bot.push(G.yard.pop());render(t("botDraw"));return botMove()}
@@ -163,23 +203,117 @@ function botMove(){
  },700);
 }
 
+// ---------- raund sonu ----------
 function endRound(winner,blocked){
  G.over=true;let gain=0;
  const pp=pip(G.hand),bp=pip(G.bot);
  if(!blocked)gain=winner==="p"?bp:pp;
  else{winner=pp<bp?"p":bp<pp?"b":null;gain=Math.abs(pp-bp)}
  if(winner)G.scores[winner]+=gain;
+ G.res={w:winner,gain,bl:blocked,fin:G.scores.p>=TARGET||G.scores.b>=TARGET};
  render();
- const fin=G.scores.p>=TARGET||G.scores.b>=TARGET;
- const txt=winner==="p"?t("rW"):winner==="b"?t("rL"):t("rD");
- $("ovT").textContent=fin?(G.scores.p>=G.scores.b?t("mW"):t("mL")):txt;
- $("ovP").textContent=(blocked?t("blocked")+" ":"")+(winner&&gain?nm(winner)+" +"+gain+" "+t("pts"):"")+"\n"+G.scores.p+" : "+G.scores.b;
- $("ovB").textContent=fin?t("again"):t("next");
- $("ovB").onclick=()=>{$("ov").style.display="none";fin?newMatch():newRound()};
- setTimeout(()=>$("ov").style.display="flex",600);
+ if(online)sync();else setTimeout(showResult,600);
+}
+function showResult(){
+ const r=G.res,fin=r.fin;
+ $("ovT").textContent=fin?(G.scores.p>=G.scores.b?t("mW"):t("mL")):(r.w==="p"?t("rW"):r.w==="b"?t("rL"):t("rD"));
+ let p=(r.bl?t("blocked")+" ":"")+(r.w&&r.gain?nm(r.w)+" +"+r.gain+" "+t("pts"):"")+"\n"+G.scores.p+" : "+G.scores.b;
+ const b=$("ovB");
+ if(online&&online.role!=="h"){b.style.display="none";p+="\n"+t("waitHost")}
+ else{b.style.display="";b.textContent=fin?t("again"):t("next");
+  b.onclick=()=>{$("ov").style.display="none";if(online)startOnline(fin);else fin?newMatch():newRound()}}
+ $("ovP").textContent=p;
+ $("ov").style.display="flex";
 }
 
+// ---------- onlayn ----------
+function toDB(){
+ const me=online.role,op=me==="h"?"g":"h";
+ const r=G.res?{w:G.res.w==="p"?me:G.res.w==="b"?op:null,gain:G.res.gain,bl:!!G.res.bl,fin:!!G.res.fin}:null;
+ return {["hand_"+me]:G.hand,["hand_"+op]:G.bot,yard:G.yard,chain:G.chain,turn:G.turn==="p"?me:op,
+  passes:G.passes,["sc_"+me]:G.scores.p,["sc_"+op]:G.scores.b,over:G.over,round:G.round,res:r};
+}
+function fromDB(s){
+ const me=online.role,op=me==="h"?"g":"h";
+ let res=null;
+ if(s.res)res={w:s.res.w===me?"p":s.res.w?"b":null,gain:s.res.gain||0,bl:!!s.res.bl,fin:!!s.res.fin};
+ G={hand:s["hand_"+me]||[],bot:s["hand_"+op]||[],yard:s.yard||[],chain:s.chain||[],turn:s.turn===me?"p":"b",
+  passes:s.passes||0,scores:{p:s["sc_"+me]||0,b:s["sc_"+op]||0},over:!!s.over,round:s.round||0,res,pending:null};
+}
+function sync(){online.ref.child("s").set(toDB()).catch(e=>setSt(t("err")+" "+(e.code||e.message)))}
+function startOnline(reset){
+ if(online.starting)return;online.starting=true;
+ const prev=(online.room&&online.room.s)||{};
+ const d=deal(),starter=d.first==="A"?"h":"g",other=starter==="h"?"g":"h";
+ const s={hand_h:d.A,hand_g:d.B,yard:d.yard,chain:d.chain,turn:other,passes:0,
+  sc_h:reset?0:(prev.sc_h||0),sc_g:reset?0:(prev.sc_g||0),over:false,round:(prev.round||0)+1,res:null};
+ online.ref.child("s").set(s).then(()=>{online.starting=false}).catch(e=>{online.starting=false;setSt(t("err")+" "+(e.code||e.message))});
+}
+function onRoom(r){
+ if(!online||!r)return;
+ online.room=r;
+ if(!r.s){
+  if(online.role==="h"){
+   if(r.guest)startOnline(true);
+   else setSt(t("waitGuest")+"<br><b>"+online.code+"</b>",true);
+  }else setSt(t("wait"));
+  return;
+ }
+ $("menu").style.display="none";
+ fromDB(r.s);render();
+ if(G.over&&G.res){if(shownRound!==G.round){shownRound=G.round;showResult()}}
+ else $("ov").style.display="none";
+}
+function setSt(x,html){$("mSt")[html?"innerHTML":"textContent"]=x;$("menu").style.display="flex"}
+async function login(){
+ if(typeof firebase==="undefined")throw new Error("Firebase yüklənmədi (internet?)");
+ if(!fbInit){firebase.initializeApp(CFG);fbInit=true}
+ const a=firebase.auth();
+ return a.currentUser?a.currentUser.uid:(await a.signInAnonymously()).user.uid;
+}
+function leave(){if(online){online.ref.off();online=null}shownRound=null;G=null;$("ov").style.display="none"}
+function attach(code,role,uid){
+ leave();
+ const ref=firebase.database().ref("rooms/"+code);
+ online={code,role,uid,ref,room:null,starting:false};
+ ref.on("value",s=>onRoom(s.val()),e=>setSt(t("err")+" "+(e.code||e.message)));
+ labels();
+}
+$("mNew").onclick=async()=>{
+ try{
+  setSt(t("wait"));
+  const uid=await login();
+  const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code="";const rnd=crypto.getRandomValues(new Uint8Array(6));
+  for(const n of rnd)code+=A[n%A.length];
+  await firebase.database().ref("rooms/"+code).set({host:uid,t:Date.now()});
+  attach(code,"h",uid);
+ }catch(e){setSt(t("err")+" "+(e.code||e.message))}
+};
+$("mJoin").onclick=async()=>{
+ const code=$("mCode").value.toUpperCase().trim();
+ if(code.length!==6)return setSt(t("fill"));
+ try{
+  setSt(t("wait"));
+  const uid=await login();
+  const ref=firebase.database().ref("rooms/"+code);
+  const r=(await ref.once("value")).val();
+  if(!r)return setSt(t("notFound"));
+  let role;
+  if(r.host===uid)role="h";
+  else if(r.guest===uid)role="g";
+  else if(!r.guest){await ref.child("guest").set(uid);role="g"}
+  else return setSt(t("full"));
+  attach(code,role,uid);
+ }catch(e){setSt(t("err")+" "+(e.code||e.message))}
+};
+$("mBot").onclick=()=>{leave();$("menu").style.display="none";labels();newMatch()};
+$("mClose").onclick=()=>{$("menu").style.display="none"};
+$("nw").onclick=()=>{$("mSt").textContent="";$("mClose").style.display=G?"":"none";$("menu").style.display="flex"};
+
+// ---------- çəkmə ----------
 function render(msg){
+ if(!G)return;
  $("sYou").textContent=G.scores.p;$("sBot").textContent=G.scores.b;
  $("yard").textContent=t("yard")+": "+G.yard.length;
  const bt=$("botTiles");bt.innerHTML="";G.bot.forEach(()=>{const d=document.createElement("div");d.className="back";bt.appendChild(d)});
@@ -195,23 +329,26 @@ function render(msg){
  $("L").style.display=$("R").style.display=ch2?"":"none";
  $("draw").style.display=$("pass").style.display=ch2?"none":"";
  let m=msg;
- if(!m)m=G.over?"":!myTurn?t("botTurn"):none?(G.yard.length?t("noMove"):t("mustPass")):t("yourTurn");
+ if(!m)m=G.over?"":!myTurn?(online?t("oppTurn"):t("botTurn")):none?(G.yard.length?t("noMove"):t("mustPass")):t("yourTurn");
  $("msg").textContent=m;
 }
-
 function labels(){
- $("lbBot").textContent=t("bot");$("lbYou").textContent=t("you");
+ $("lbBot").textContent=bn();$("lbYou").textContent=t("you");
  $("draw").textContent=t("draw");$("pass").textContent=t("pass");
  $("L").textContent=t("left");$("R").textContent=t("right");$("nw").textContent=t("nw");
+ $("mBot").textContent=t("vsBot");$("mNew").textContent=t("create");$("mJoin").textContent=t("join");
+ $("mClose").textContent=t("close");$("mCode").placeholder=t("codePh");
  $("lang").textContent=lang.toUpperCase();
+ $("lvl").style.display=online?"none":"";
  const s=$("lvl");s.innerHTML="";
  for(const k of ["easy","normal","hard"]){const o=document.createElement("option");o.value=k;o.textContent=t(k);if(k===level)o.selected=true;s.appendChild(o)}
  document.documentElement.lang=lang;
 }
 $("lang").onclick=()=>{lang=lang==="az"?"en":"az";localStorage.setItem("dlang",lang);labels();render()};
 $("lvl").onchange=e=>{level=e.target.value;localStorage.setItem("dlvl",level)};
-$("nw").onclick=()=>{$("ov").style.display="none";newMatch()};
-labels();newMatch();
+labels();
+$("mClose").style.display="none";
+$("menu").style.display="flex";
 </script>
 </body>
 </html>
